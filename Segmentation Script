@@ -1,0 +1,29 @@
+#This script was used for creating marketable segments using business rules.
+
+
+////Creating Segments
+//
+//Creating_Segments_February:
+//
+//Load Distinct *, ##importing tags from Analytics Base Table
+//         if(Total_Visits>50, 'Outliers',
+//      if(Ever_engaged<>1, 'Unengaged',
+//      if(Ever_engaged=1 and Vintage<=60, 'Newbies',
+//      if(Ever_engaged>=1 and Total_Visits=1 and Recency>60 and Recency<=180, 'Snoozers',
+//    if(Ever_engaged>=1 and Total_Visits=1 and Recency<=60, 'Newbies - Reactivated',
+//    if(Ever_engaged=1 and Recency>180, 'Inactive',
+//          if(Ever_engaged=1 and Accrual_Vouchers_Redeemed>0 and FnB_Transactions>0, 'Privileged',
+//    if(Ever_engaged=1 and (Hindi_Movies_Watched>0 or English_Movies_Watched>0) and (Kannada_Movies_Watched>0 or Malayalam_Movies_Watched>0 or Marathi_Movies_Watched>0 or Telugu_Movies_Watched>0 or Bengali_Movies_Watched>0 or Tamil_Movies_Watched>0 or Punjabi_Movies_Watched>0 or Other_Languages_Watched>0), 'Polyglots',
+//      if(Ever_engaged=1 and Total_Visits>=8, 'Movie Buffs', //one visit every 2 months
+//      if(Ever_engaged>=1 and (if(Ticket_Spends>0,(Ticket_Spends/Tickets_Bought)<=150) or (Total_Spends/Total_Visits)<=150) and (Total_Visits>=3), 'Value Conscious', //LVHF
+//      if(Ever_engaged=1 and Total_Visits>=2 and (Weekday_Morning_Evening_Ticket_transactions/Ticket_Transactions)>0.4, 'Daydreamers', 
+//      if(Ever_engaged=1 and Total_Visits>=2 and (len(FnB_Transactions)=0 or FnB_Transactions=0), 'Breatharians',
+//      if(Ever_engaged=1 and Total_Visits>=2 and FnB_Transactions>0 and ((Visits_with_FnB/Total_Visits)>=0.8 or (FnB_Transactions/Total_Transactions)>=0.6), 'Foodies',
+//    if(Ever_engaged=1 and (Total_Spends>=1000 or (Total_Visits>=2 and (Iconic_Cinema_Total_Spends/Total_Spends)>0.5) or (Ticket_Spends/Tickets_Bought)>=400), 'Conditionally Loyal',//High Value, Low Frequency Customers
+//      if(Ever_engaged=1 and (Kannada_Movies_Watched>0 or Malayalam_Movies_Watched>0 or Marathi_Movies_Watched>0 or Telugu_Movies_Watched>0 or Bengali_Movies_Watched>0 or Tamil_Movies_Watched>0 or Punjabi_Movies_Watched>0 or Other_Languages_Watched>0), 'Only Regional Movie Watchers',
+//       'Others'))))))))))))))) as Segment
+//
+//Resident l_log3;
+//drop table l_log3;
+//
+//store Creating_Segments_February into Creating_Segments_February.qvd;
