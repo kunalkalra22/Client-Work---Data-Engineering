@@ -1,0 +1,240 @@
+This script is used to create smaller Hyper-segments out of the Marketable segments based on business needs. A permanent control base was also extracted by utilising 
+Stratified Random Sampling to select 10% of customers from each Hyper-segment. This control base was not a part of any marketing campaigns, and was used to evaluate the 
+effectiveness of our marketing strategy over a period of time.
+
+
+////Creating Hyper_segments
+//Segments_Feb_v2:
+//Load *,	 
+//	 Segment&'_'&Voucher_Redeemer_Tag&'_'&DND_status&'_'&if(Total_Visits<=Visits_33P,'Visits_33P',if(Total_Visits<=Visits_67P,'Visits_67P', 'Visits_67to100P'))&'_'&if(AVV<=AVV_33P,'AVV_33P',if(AVV<=AVV_67P,'AVV_67P','AVV_67to100P')) as Hyper_segment
+//	 //AutoNumber(Segment&'_'&DND_status&'_'&if(Total_Visits<=Visits_33P,'Visits_33P',if(Total_Visits<=Visits_67P,'Visits_67P', 'Visits_67to100P'))&'_'&if(AVV<=AVV_33P,'AVV_33P',if(AVV<=AVV_67P,'AVV_67P','AVV_67to100P'))) as Counter
+//	 
+//Resident Segments;
+//
+//Drop Table Segments;
+//
+//Store Segments_Feb_v2 into Segments_Feb_v2.qvd;
+
+
+//////
+//A:
+//LOAD Distinct
+//    Segment,
+//    transaction_membershipid,
+//    member_cardNumber,
+//    Hyper_segment
+//FROM
+//[D:\XYZ February\Segments_Feb_v2.qvd]
+//(qvd);
+//
+//Left Join (A)
+//
+//LOAD Hyper_segment,
+//	RowNo() as Segment_alias,
+//	Floor(Count(transaction_membershipid)*0.1) as ReqdCG
+//Resident A
+//Group By Hyper_segment;
+//
+////STORE A into [E:\MISC\Segment1.qvd](qvd);
+//
+////EXIT Script;
+//
+//NoConcatenate
+//B:
+//LOAD *,
+//	Rand() as RandomNo
+//Resident A;
+//DROP Table A;
+//
+////Exit Script;
+//
+//NoConcatenate
+//C:
+//LOAD *,
+//	RowNo() as Rank
+//Resident B
+//order by Segment_alias desc, RandomNo desc;
+//DROP Table B;
+//
+////EXIT Script;
+//
+//Left Join (C)
+//LOAD min(Rank) as minRank,
+//	Segment_alias
+//Resident C
+//Group BY Segment_alias;
+//
+////EXIT Script;
+//
+//NoConcatenate
+//D:
+//LOAD *,
+//	Rank-minRank+1 as SegmentWiseRank
+//Resident C;
+//DROP Table C;
+//
+//NoConcatenate
+//E:
+//LOAD *,
+//	SegmentWiseRank - ReqdCG as Counter
+//Resident D;
+//DROP Table D;
+//
+////EXIT Script;
+//
+//
+//NoConcatenate			/////FINAL TABLE WITH 10% FROM EVERY HYPERSEGMENT
+//F:				
+//LOAD *
+//Resident E
+//Where Counter<=0;
+//DROP Table E;
+//
+//store F into Permanent_Control_basis_25_Feb.qvd;
+//let vRow = NoOfRows('F');	////TO CHECK THE ROWS
+//
+//EXIT Script;
+
+////
+//Permanent_Control_basis_25_Feb_full_base:
+//LOAD 
+//     transaction_membershipid,
+//     1 as Control
+//FROM
+//[D:\XYZ January\Creating_Segments_January_with_PC.qvd]
+//(qvd)
+//where Group='Permanent_Control';
+//
+//Concatenate
+//
+//LOAD 
+//     transaction_membershipid, 
+//     1 as Control
+//FROM
+//[D:\XYZ February\Permanent_Control_basis_25_Feb.qvd]
+//(qvd);
+//
+//
+//store Permanent_Control_basis_25_Feb_full_base into Permanent_Control_basis_25_Feb_full_base.qvd;
+
+
+//
+//l_log:
+//
+//LOAD transaction_membershipid, 
+//     member_cardNumber, 
+//     Enrolment_date, 
+//     Vintage, 
+//     First_Txn_Date, 
+//     Last_Txn_Date, 
+//     Recency, 
+//     Total_Visits, 
+//     Latency, 
+//     Total_Transactions, 
+//     Total_Spends, 
+//     Spend_Based_Points_Earned, 
+//     Enrolment_Channel, 
+//     Enrolment_Cinema, 
+//     Earned_Accrual_Voucher_Tag, 
+//     Accrual_Voucher_Redeemer_Tag, 
+//     Accrual_Vouchers_Earned, 
+//     Accrual_Vouchers_Redeemed, 
+//     Accrual_Vouchers_Expired, 
+//     Aware_member_Rolling_12_months, 
+//     received_Birthday_Voucher_Tag, 
+//     Birthday_Voucher_Redeemer_Tag, 
+//     Birthday_Vouchers_Earned, 
+//     Birthday_Vouchers_Redeemed, 
+//     Birthday_Vouchers_Expired, 
+//     Earn_Active, 
+//     Ever_engaged, 
+//     FnB_Transactions, 
+//     FnB_Spends, 
+//     FnB_Bought, 
+//     Visits_with_FnB, 
+//     Total_Online_Transactions, 
+//     Total_Online_Spends, 
+//     Online_Ticket_Transactions, 
+//     Online_Ticket_Spends, 
+//     Online_Tickets_Bought, 
+//     Online_FnB_Transactions, 
+//     Online_FnB_Spends, 
+//     Online_FnB_Qty_Bought, 
+//     BM_Ticket_Transactions, 
+//     BM_Ticket_Spends, 
+//     BM_Tickets_Bought, 
+//     PT_Ticket_Transactions, 
+//     PT_Ticket_Spends, 
+//     PT_Tickets_Bought, 
+//     Bought_Paid_Voucher_Tag, 
+//     Paid_Voucher_Redeemer_Tag, 
+//     Paid_Vouchers_earned, 
+//     Paid_Vouchers_Redeemed, 
+//     Paid_Vouchers_Expired, 
+//     received_popcorn_Voucher_Tag, 
+//     Popcorn_Voucher_Redeemer_Tag, 
+//     Popcorn_Vouchers_Earned, 
+//     Popcorn_Vouchers_Redeemed, 
+//     Popcorn_Vouchers_Expired, 
+//     received_promotional_Voucher_Tag, 
+//     Promotional_Voucher_Redeemer_Tag, 
+//     Promotional_Vouchers_earned, 
+//     Promotional_Vouchers_Redeemed, 
+//     Promotional_Vouchers_Expired, 
+//     Ticket_Transactions, 
+//     Ticket_Spends, 
+//     Tickets_Bought, 
+//     Ever_redeemer_tag, 
+//     Annualised_Visits_Overall, 
+//     Annualised_Visits_Repeaters, 
+//     Total_Popcorn_Transactions, 
+//     Other_Languages_Watched, 
+//     Punjabi_Movies_Watched, 
+//     Bengali_Movies_Watched, 
+//     Marathi_Movies_Watched, 
+//     Malayalam_Movies_Watched, 
+//     Telugu_Movies_Watched, 
+//     Kannada_Movies_Watched, 
+//     Tamil_Movies_Watched, 
+//     English_Movies_Watched, 
+//     Hindi_Movies_Watched, 
+//     Iconic_Cinema_Total_Transactions, 
+//     Iconic_Cinema_Ticket_transactions, 
+//     Iconic_Cinema_FnB_Transactions, 
+//     Iconic_Cinema_Total_Spends, 
+//     Iconic_Cinema_Ticket_Spends, 
+//     Iconic_Cinema_FnB_Spends, 
+//     Iconic_Cinema_Visits, 
+//     Weekday_Morning_Evening_Ticket_transactions, 
+//     Weekday_shows_watched, 
+//     Weekend_shows_watched, 
+//     Morning_shows_watched, 
+//     Afternoon_shows_watched, 
+//     Evening_shows_watched, 
+//     Night_shows_watched, 
+//     Segment, 
+//     DND_status
+//FROM
+//Creating_Segments_February.qvd
+//(qvd);
+//
+//left join
+//
+//LOAD transaction_membershipid, 
+//     Control
+//FROM
+//Permanent_Control_basis_25_Feb_full_base.qvd
+//(qvd);
+//
+//
+//NoConcatenate
+//
+//l_log2:
+//
+//Load Distinct *,
+//     if(Control=1,'Permanent_Control','Test') as Group
+//     
+//     Resident l_log;
+//     drop table l_log;
+//     
+//     store l_log2 into Creating_Segments_February_with_PC.qvd;
