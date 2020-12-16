@@ -1,0 +1,658 @@
+////Single View Creation
+//
+//l_log8:
+//
+//LOAD Distinct transaction_membershipid, 
+//     member_creationDate_modified as Enrolment_date, 
+//     member_cardNumber, 
+//     ('25-02-2020' - member_creationDate_modified) as Vintage
+// 
+//FROM
+//[D:\XYZ February\Member_master_updated_till_25Feb.qvd]
+//(qvd);
+//
+//left join(l_log8)
+//
+////Overall_SKU_tags
+//
+//LOAD transaction_membershipid,
+//     date(min(transaction_date)) as First_Txn_Date,
+// 	 date(max(transaction_date)) as Last_Txn_Date,
+// 	 '25-02-2020' - date(max(transaction_date)) as Recency,
+//	 count(DISTINCT visit_rank) as Total_Visits,
+// 	 Round((max(transaction_date)-min(transaction_date))/(max(visit_rank)-1),1) as Latency,
+//	 count(DISTINCT transaction_id) as Total_Transactions,
+//	 sum(total_spends) as Total_Spends,
+//	 sum(total_spends)*0.05 as Spend_Based_Points_Earned
+// FROM
+//[D:\XYZ February\SKU_full_updated_till_25_Feb_with_visit_rank.qvd]
+//(qvd)
+//
+//Where transactionItem_itemid<>'6887' and transactionItem_itemid<>'9255' and transactionItem_itemid<>'183525' and transactionItem_itemid<>'2855728' and (transactionItem_itemid<>'100868' and transactionItem_itemid<>'100869' and transactionItem_itemid<>'102115' and transactionItem_itemid<>'103102' and transactionItem_itemid<>'103103' and transactionItem_itemid<>'106086' and transactionItem_itemid<>'107553' and transactionItem_itemid<>'108857' and transactionItem_itemid<>'6887' and transactionItem_itemid<>'9255' and transactionItem_itemid<>'183525' and transactionItem_itemid<>'2855728')
+//
+//Group by transaction_membershipid;
+//     
+//left join(l_log8)
+//
+//// Joining last transacted cinema tag
+//
+//Load Distinct *
+//
+//Resident Last_transacted_cinema_final;
+//drop table Last_transacted_cinema_final;
+//
+//left join(l_log8)
+//
+////Joining Enrolment Cinema tag
+//
+//Load Distinct *
+//Resident l_log5;
+//drop table l_log5;
+//
+//left join(l_log8)
+//
+////Joining Aware member tag
+//
+//Load Distinct *
+//Resident l_log6;
+//drop table l_log6;
+//
+//left join(l_log8)
+//
+////Fnb metrics
+//
+//FnB_tags:
+//Load transaction_membershipid,
+//	 count(DISTINCT transaction_id) as FnB_Transactions,
+// 	 sum(total_spends) as FnB_Spends,
+// 	 sum(transactionItem_quantity) as FnB_Bought,
+// 	 count(DISTINCT visit_rank) as Visits_with_FnB
+// FROM
+//[D:\XYZ February\SKU_full_updated_till_25_Feb_with_visit_rank.qvd]
+//(qvd)
+//where (transactionItem_movieid='NULL' or transactionItem_movieid='' or transactionItem_movieid='\N')
+//and (transactionItem_itemid<>'100868' and transactionItem_itemid<>'100869' and transactionItem_itemid<>'102115' and transactionItem_itemid<>'103102' and transactionItem_itemid<>'103103' and transactionItem_itemid<>'106086' and transactionItem_itemid<>'107553' and transactionItem_itemid<>'108857')
+// and Sundries_tag<>1
+//
+//group by transaction_membershipid;
+//
+//
+//left join(l_log8)
+//
+//NoConcatenate
+//
+////Ticket Metrics
+//
+//Ticket_tags:
+//Load transaction_membershipid,
+//	 count(DISTINCT transaction_id) as Ticket_Transactions,
+// 	 sum(total_spends) as Ticket_Spends,
+// 	 sum(transactionItem_quantity) as Tickets_Bought
+// 
+// FROM
+//[D:\XYZ February\SKU_full_updated_till_25_Feb_with_visit_rank.qvd]
+//(qvd)
+//where transactionItem_movieid<>'NULL' and transactionItem_movieid<>'' and transactionItem_movieid<>'\N' 
+//and (transactionItem_itemid<>'100868' and transactionItem_itemid<>'100869' and transactionItem_itemid<>'102115' and transactionItem_itemid<>'103102' and transactionItem_itemid<>'103103' and transactionItem_itemid<>'106086' and transactionItem_itemid<>'107553' and transactionItem_itemid<>'108857')
+//
+//group by transaction_membershipid;
+//
+//left join(l_log8)
+//
+////Online Metrics
+//
+//Load transaction_membershipid,
+//	 count(DISTINCT transaction_id) as Total_Online_Transactions,
+// 	 sum(total_spends) as Total_Online_Spends,
+// 	 count(DISTINCT if(transactionItem_movieid<>'NULL' and transactionItem_movieid<>'' and transactionItem_movieid<>'\N', transaction_id)) as Online_Ticket_Transactions,
+// 	 sum(if(transactionItem_movieid<>'NULL' and transactionItem_movieid<>'' and transactionItem_movieid<>'\N', total_spends)) as Online_Ticket_Spends,
+// 	 sum(if(transactionItem_movieid<>'NULL' and transactionItem_movieid<>'' and transactionItem_movieid<>'\N', transactionItem_quantity)) as Online_Tickets_Bought,
+// 	 count(DISTINCT if((transactionItem_movieid='NULL' or transactionItem_movieid='' or transactionItem_movieid='\N') and Sundries_tag<>1, transaction_id)) as Online_FnB_Transactions,
+// 	 sum(if((transactionItem_movieid='NULL' or transactionItem_movieid='' or transactionItem_movieid='\N') and Sundries_tag<>1, total_spends)) as Online_FnB_Spends,
+// 	 sum(if((transactionItem_movieid='NULL' or transactionItem_movieid='' or transactionItem_movieid='\N') and Sundries_tag<>1, transactionItem_quantity)) as Online_FnB_Qty_Bought, 	 
+// 	 count(DISTINCT if(transactionItem_movieid<>'NULL' and transactionItem_movieid<>'' and transactionItem_movieid<>'\N' and paymentType_Code='BM', transaction_id)) as BM_Ticket_Transactions,
+// 	 sum(if(transactionItem_movieid<>'NULL' and transactionItem_movieid<>'' and transactionItem_movieid<>'\N' and paymentType_Code='BM', total_spends)) as BM_Ticket_Spends,
+// 	 sum(if(transactionItem_movieid<>'NULL' and transactionItem_movieid<>'' and transactionItem_movieid<>'\N' and paymentType_Code='BM', transactionItem_quantity)) as BM_Tickets_Bought,
+// 	 count(DISTINCT if(transactionItem_movieid<>'NULL' and transactionItem_movieid<>'' and transactionItem_movieid<>'\N' and paymentType_Code='PT', transaction_id)) as PT_Ticket_Transactions,
+// 	 sum(if(transactionItem_movieid<>'NULL' and transactionItem_movieid<>'' and transactionItem_movieid<>'\N' and paymentType_Code='PT', total_spends)) as PT_Ticket_Spends,
+// 	 sum(if(transactionItem_movieid<>'NULL' and transactionItem_movieid<>'' and transactionItem_movieid<>'\N' and paymentType_Code='PT', transactionItem_quantity)) as PT_Tickets_Bought
+// 	 
+// FROM
+//[D:\XYZ February\SKU_full_updated_till_25_Feb_with_visit_rank.qvd]
+//(qvd)
+//where (paymentType_Code='w' or paymentType_Code='W' or paymentType_Code='WT' or paymentType_Code='TZ' or paymentType_Code='BM' or paymentType_Code='PT')
+//and transactionItem_itemid<>'6887' and transactionItem_itemid<>'9255' and transactionItem_itemid<>'183525' and transactionItem_itemid<>'2855728' 
+//and (transactionItem_itemid<>'100868' and transactionItem_itemid<>'100869' and transactionItem_itemid<>'102115' and transactionItem_itemid<>'103102' and transactionItem_itemid<>'103103' and transactionItem_itemid<>'106086' and transactionItem_itemid<>'107553' and transactionItem_itemid<>'108857')
+//and member_creationDate_modified>='01-09-2017' 
+//
+//group by transaction_membershipid;
+//
+//left join(l_log8)
+//
+////Ever engaged tag
+//
+//LOAD Distinct transaction_membershipid, 
+//     1 as Ever_engaged
+// FROM
+//[D:\XYZ February\SKU_full_updated_till_25_Feb_with_visit_rank.qvd]
+//(qvd)
+//where (transactionItem_itemid<>'100868' and transactionItem_itemid<>'100869' and transactionItem_itemid<>'102115' and transactionItem_itemid<>'103102' and transactionItem_itemid<>'103103' and transactionItem_itemid<>'106086' and transactionItem_itemid<>'107553' and transactionItem_itemid<>'108857' and transactionItem_itemid<>'6887' and transactionItem_itemid<>'9255' and transactionItem_itemid<>'183525' and transactionItem_itemid<>'2855728');
+//
+//
+//left join(l_log8)
+//
+////Accrual Vouchers
+//
+//Accrual_Voucher_tags:
+//
+//LOAD Distinct
+//     member_cardNumber,
+//     1 as Earned_Accrual_Voucher_Tag,
+//     if(count(DISTINCT if(Voucher_Used_Tag=1, Voucher_Code))>0,1,0) as Accrual_Voucher_Redeemer_Tag,
+//     count(DISTINCT Voucher_Code) as Accrual_Vouchers_Earned,
+//     count(DISTINCT if(Voucher_Used_Tag=1, Voucher_Code)) as Accrual_Vouchers_Redeemed,
+//     count(DISTINCT if(Voucher_Expired_tag=1, Voucher_Code)) as Accrual_Vouchers_Expired
+//     
+//FROM
+//[D:\XYZ February\Voucher_Redemption_log_updated_till_25_Feb.qvd]
+//(qvd)
+//where Scheme_intID=1
+//
+//group by member_cardNumber;
+//
+//left join(l_log8)
+//
+////Popcorn Vouchers
+//
+//Popcorn_Voucher_tags:
+//LOAD Distinct
+//     member_cardNumber,
+//     1 as received_popcorn_Voucher_Tag,
+//     if(count(DISTINCT if(Voucher_Used_Tag=1, Voucher_Code))>0,1,0) as Popcorn_Voucher_Redeemer_Tag,
+//     count(DISTINCT Voucher_Code) as Popcorn_Vouchers_Earned,
+//     count(DISTINCT if(Voucher_Used_Tag=1, Voucher_Code)) as Popcorn_Vouchers_Redeemed,
+//     count(DISTINCT if(Voucher_Expired_tag=1, Voucher_Code)) as Popcorn_Vouchers_Expired
+//     
+//FROM
+//[D:\XYZ February\Voucher_Redemption_log_updated_till_25_Feb.qvd]
+//(qvd)
+//where (Scheme_intID=35 or Scheme_intID=27)
+//group by member_cardNumber;
+//
+//left join(l_log8)
+//
+////
+//
+////Promotional Vouchers
+//
+//Promotional_Voucher_tags:
+//LOAD member_cardNumber, 
+//     1 as received_promotional_Voucher_Tag,
+//     if(count(DISTINCT if(Voucher_Used_Tag=1, Voucher_Code))>0,1,0) as Promotional_Voucher_Redeemer_Tag,
+//     count(DISTINCT Voucher_Code) as Promotional_Vouchers_earned,
+//     count(DISTINCT if(Voucher_Used_Tag=1, Voucher_Code)) as Promotional_Vouchers_Redeemed,
+//     count(DISTINCT if(Voucher_Expired_tag=1, Voucher_Code)) as Promotional_Vouchers_Expired
+//FROM
+//[D:\XYZ February\Voucher_Redemption_log_updated_till_25_Feb.qvd]
+//(qvd)
+//where Scheme_intID<>1 and Scheme_intID<>38 and Scheme_intID<>39 and Scheme_intID<>40 and Scheme_intID<>35 and Scheme_intID<>27 and Scheme_intID<>2
+//group by member_cardNumber;
+//
+//left join(l_log8)
+//
+////Paid Enrolment Vouchers
+//
+//Paid_Voucher_tags:
+//LOAD member_cardNumber, 
+//     1 as Bought_Paid_Voucher_Tag,
+//     if(count(DISTINCT if(Voucher_Used_Tag=1, Voucher_Code))>0,1,0) as Paid_Voucher_Redeemer_Tag,
+//     count(DISTINCT Voucher_Code) as Paid_Vouchers_earned,
+//     count(DISTINCT if(Voucher_Used_Tag=1, Voucher_Code)) as Paid_Vouchers_Redeemed,
+//     count(DISTINCT if(Voucher_Expired_tag=1, Voucher_Code)) as Paid_Vouchers_Expired
+//
+//FROM
+//[D:\XYZ February\Voucher_Redemption_log_updated_till_25_Feb.qvd]
+//(qvd)
+//Where Scheme_intID=2 
+//group by member_cardNumber;
+//
+//left join(l_log8)
+//
+////Birthday Vouchers
+//
+//
+//Birthday_voucher_tags:
+//LOAD member_cardNumber, 
+//    1 as received_Birthday_Voucher_Tag,
+//     if(count(DISTINCT if(Voucher_Used_Tag=1, Voucher_Code))>0,1,0) as Birthday_Voucher_Redeemer_Tag,
+//     count(DISTINCT Voucher_Code) as Birthday_Vouchers_Earned,
+//     count(DISTINCT if(Voucher_Used_Tag=1, Voucher_Code)) as Birthday_Vouchers_Redeemed,
+//     count(DISTINCT if(Voucher_Expired_tag=1, Voucher_Code)) as Birthday_Vouchers_Expired 
+//  
+//FROM
+//[D:\XYZ February\Voucher_Redemption_log_updated_till_25_Feb.qvd]
+//(qvd)
+//where Scheme_intID=38 or Scheme_intID=39 or Scheme_intID=40
+//group by member_cardNumber;
+//
+//store l_log8 into Single_View_updated_till_25Feb2020.qvd;
+//
+//
+////-----------------------------------------Segmentation--------------------------------------
+//
+//
+////Popcorn tags with updated list of Popcorn Items
+//
+//l_log:
+//LOAD transaction_membershipid, 
+//     transaction_id, 
+//     transactionItem_lineItemCount, 
+//     transactionItem_itemid, 
+//     transactionItem_movieid, 
+//     transactionItem_quantity, 
+//     transactionItem_sessionTime, 
+//     total_spends, 
+//     transaction_complexid, 
+//     transaction_date, 
+//     member_cardNumber, 
+//      
+//     member_creationDate_modified, 
+//      
+//     visit_rank
+//FROM
+//[D:\XYZ February\SKU_full_updated_till_25_Feb_with_visit_rank.qvd]
+//(qvd)
+//where  (transactionItem_itemid<>'100868' and transactionItem_itemid<>'100869' and transactionItem_itemid<>'102115' and transactionItem_itemid<>'103102' and transactionItem_itemid<>'103103' and transactionItem_itemid<>'106086' and transactionItem_itemid<>'107553' and transactionItem_itemid<>'108857' and transactionItem_itemid<>'6887' and transactionItem_itemid<>'9255' and transactionItem_itemid<>'183525' and transactionItem_itemid<>'2855728')
+//and (transactionItem_movieid='\N' or transactionItem_movieid='NULL' or transactionItem_movieid='')//condition for loading FnB Transactions only 
+//;
+//
+//left join
+//
+//LOAD transactionItem_itemid, 
+//     1 as Popcorn_item
+//FROM
+//[..\XYZ January\XYZ_SKU_popcorn.csv]
+//(txt, utf8, embedded labels, delimiter is ',');
+//
+//
+//NoConcatenate
+//
+//Popcorn_Eaters:
+//LOAD transaction_membershipid,
+//
+// count(DISTINCT if(Popcorn_item=1, transaction_id)) as Total_Popcorn_Transactions
+//
+//Resident l_log
+//group by transaction_membershipid;
+//
+//Drop table l_log;
+//
+//NoConcatenate
+//
+////Iconic_and_Price_Capped_Cinema_tags
+//
+//l_log2:
+//LOAD transaction_membershipid, 
+//     transaction_id, 
+//     transactionItem_lineItemCount, 
+//     transactionItem_itemid, 
+//     transactionItem_movieid, 
+//     transactionItem_quantity, 
+//     transactionItem_sessionTime, 
+//     total_spends, 
+//     transaction_complexid, 
+//     transaction_date, 
+//     member_cardNumber,  
+//     member_creationDate_modified, 
+//      
+//     visit_rank,
+//     Sundries_tag
+//FROM
+//[D:\XYZ February\SKU_full_updated_till_25_Feb_with_visit_rank.qvd]
+//(qvd)
+//Where (transactionItem_itemid<>'100868' and transactionItem_itemid<>'100869' and transactionItem_itemid<>'102115' and transactionItem_itemid<>'103102' and transactionItem_itemid<>'103103' and transactionItem_itemid<>'106086' and transactionItem_itemid<>'107553' and transactionItem_itemid<>'108857' and transactionItem_itemid<>'6887' and transactionItem_itemid<>'9255' and transactionItem_itemid<>'183525' and transactionItem_itemid<>'2855728');
+//
+//inner join
+//
+////Updated Cinema Master
+//
+//LOAD  
+//     transaction_complexid, 
+//     Iconic_Cinema_Tag, 
+//     Price_capped_cinema_tag
+//FROM
+//[..\XYZ January\Cinema Master_KP_updated_14th_Aug (version 1).xlsx]
+//(ooxml, embedded labels, table is [Cinema Master_KP_updated_14th_A]);
+//
+////PriceCapped
+//
+//Price_Capped_Cinema_Watchers:
+//LOAD transaction_membershipid,  
+//     count(DISTINCT transaction_id) as Price_capped_Total_Transactions,
+//     count(DISTINCT if(transactionItem_movieid<>'\N' or transactionItem_movieid<>'NULL' or transactionItem_movieid<>'', transaction_id)) as Price_capped_Ticket_transactions,
+//     count(DISTINCT if((transactionItem_movieid='\N' or transactionItem_movieid='NULL' or transactionItem_movieid='') and Sundries_tag<>1, transaction_id)) as Price_capped_FnB_Transactions,
+//     sum(total_spends) as Price_capped_Total_Spends,
+//     sum(if(transactionItem_movieid<>'\N' or transactionItem_movieid<>'NULL' or transactionItem_movieid<>'', total_spends)) as Price_capped_Ticket_Spends,
+//     sum(if((transactionItem_movieid='\N' or transactionItem_movieid='NULL' or transactionItem_movieid='') and Sundries_tag<>1, total_spends)) as Price_capped_FnB_Spends,
+//     count(DISTINCT visit_rank) as Price_capped_Visits
+//Resident
+//l_log2
+//where Price_capped_cinema_tag=1
+//
+//Group by transaction_membershipid;
+//
+//
+////Iconic Spends needed for Conditionally loyal Segment
+//
+//Iconic_Cinema_Spends:
+//
+//Load transaction_membershipid,
+//     sum(Total_Spends) as Iconic_Cinema_Total_Spends
+//     
+//Resident l_log2
+//where Iconic_Cinema_Tag=1;
+//drop table l_log2;
+//
+//NoConcatenate
+//
+////Temp table required for Movie Language Tags
+//
+//Temp:
+//LOAD transaction_membershipid, 
+//     transaction_id, 
+//     transactionItem_lineItemCount, 
+//     transactionItem_itemid, 
+//     transactionItem_movieid, 
+//     transactionItem_quantity, 
+//     transactionItem_sessionTime, 
+//     total_spends, 
+//     transaction_complexid, 
+//     transaction_date, 
+//     member_cardNumber,  
+//     member_creationDate_modified, 
+//      
+//     visit_rank
+//FROM
+//[D:\XYZ February\SKU_full_updated_till_25_Feb_with_visit_rank.qvd]
+//(qvd)
+//WHERE transactionItem_movieid<>'\N' and transactionItem_movieid<>'NULL' and transactionItem_movieid<>'';
+//
+//INNER JOIN
+//
+////Updated Movie Master
+//
+//LOAD transactionItem_movieid, 
+//     Language
+//FROM
+//[Movie Master with Language 08_March.xlsx]
+//(ooxml, embedded labels, table is Sheet1);
+//
+//NoConcatenate
+//
+//
+////Joining Tags created above
+//
+//l_log3:
+//LOAD transaction_membershipid, 
+//     member_cardNumber, 
+//     Enrolment_date, 
+//     Vintage, 
+//     First_Txn_Date, 
+//     Last_Txn_Date, 
+//     Recency, 
+//     Total_Visits, 
+//     Latency, 
+//     Total_Transactions, 
+//     Total_Spends, 
+//     Spend_Based_Points_Earned, 
+//     Enrolment_Channel, 
+//     Enrolment_Cinema, 
+//     Earned_Accrual_Voucher_Tag, 
+//     Accrual_Voucher_Redeemer_Tag, 
+//     Accrual_Vouchers_Earned, 
+//     Accrual_Vouchers_Redeemed, 
+//     Accrual_Vouchers_Expired, 
+//     Aware_member_Rolling_12_months, 
+//     received_Birthday_Voucher_Tag, 
+//     Birthday_Voucher_Redeemer_Tag, 
+//     Birthday_Vouchers_Earned, 
+//     Birthday_Vouchers_Redeemed, 
+//     Birthday_Vouchers_Expired, 
+//     Earn_Active, 
+//     Ever_engaged, 
+//     FnB_Transactions, 
+//     FnB_Spends, 
+//     FnB_Bought, 
+//     Visits_with_FnB, 
+//     Total_Online_Transactions, 
+//     Total_Online_Spends, 
+//     Online_Ticket_Transactions, 
+//     Online_Ticket_Spends, 
+//     Online_Tickets_Bought, 
+//     Online_FnB_Transactions, 
+//     Online_FnB_Spends, 
+//     Online_FnB_Qty_Bought, 
+//     BM_Ticket_Transactions, 
+//     BM_Ticket_Spends, 
+//     BM_Tickets_Bought, 
+//     PT_Ticket_Transactions, 
+//     PT_Ticket_Spends, 
+//     PT_Tickets_Bought, 
+//     Bought_Paid_Voucher_Tag, 
+//     Paid_Voucher_Redeemer_Tag, 
+//     Paid_Vouchers_earned, 
+//     Paid_Vouchers_Redeemed, 
+//     Paid_Vouchers_Expired, 
+//     received_popcorn_Voucher_Tag, 
+//     Popcorn_Voucher_Redeemer_Tag, 
+//     Popcorn_Vouchers_Earned, 
+//     Popcorn_Vouchers_Redeemed, 
+//     Popcorn_Vouchers_Expired, 
+//     received_promotional_Voucher_Tag, 
+//     Promotional_Voucher_Redeemer_Tag, 
+//     Promotional_Vouchers_earned, 
+//     Promotional_Vouchers_Redeemed, 
+//     Promotional_Vouchers_Expired, 
+//     Ticket_Transactions, 
+//     Ticket_Spends, 
+//     Tickets_Bought, 
+//     Ever_redeemer_tag, 
+//     Annualised_Visits_Overall, 
+//     Annualised_Visits_Repeaters
+//FROM
+//Single_View_updated_till_25Feb2020.qvd
+//(qvd);
+//
+//left join(l_log3)
+//
+//Load Distinct *
+//
+//Resident Popcorn_Eaters;
+//drop table Popcorn_Eaters;
+//
+//left join(l_log3)
+//
+//Load Distinct *
+//
+//Resident Price_Capped_Cinema_Watchers;
+//drop table Price_Capped_Cinema_Watchers;
+//
+//left join(l_log3)
+//
+//Load Distinct *
+//
+//Resident Iconic_Cinema_Spends;
+//drop table Iconic_Cinema_Spends;
+//
+//
+//left join(l_log3)
+//
+////Langauge tags
+//
+//Hindi_watchers:
+//LOAD transaction_membershipid,
+// count(DISTINCT transactionItem_movieid) as Hindi_Movies_Watched
+// 
+//Resident
+//Temp
+//
+//where Language='HINDI'
+//Group By transaction_membershipid;
+//
+//left join(l_log3)
+//
+//
+//English_watchers:
+//LOAD transaction_membershipid,
+// count(DISTINCT transactionItem_movieid) as English_Movies_Watched
+//Resident
+//Temp
+//
+//where Language='ENGLISH'
+//
+//Group By transaction_membershipid;
+//
+//left join(l_log3)
+//
+//
+//Tamil_watchers:
+//LOAD transaction_membershipid,
+// count(DISTINCT transactionItem_movieid) as Tamil_Movies_Watched
+//Resident
+//Temp
+//
+//where Language='TAMIL'
+//
+//Group By transaction_membershipid;
+//
+//left join(l_log3)
+//
+//Kannada_watchers:
+//LOAD transaction_membershipid,
+// count(DISTINCT transactionItem_movieid) as Kannada_Movies_Watched
+//Resident
+//Temp
+//
+//where Language='KANNADA'
+//
+//Group By transaction_membershipid;
+//
+//left join(l_log3)
+//
+//Telugu_watchers:
+//LOAD transaction_membershipid,
+// count(DISTINCT transactionItem_movieid) as Telugu_Movies_Watched
+//Resident
+//Temp
+//
+//where Language='TELUGU'
+//
+//Group By transaction_membershipid;
+//
+//left join(l_log3)
+//
+//Malayalam_watchers:
+//LOAD transaction_membershipid,
+// count(DISTINCT transactionItem_movieid) as Malayalam_Movies_Watched
+//Resident
+//Temp
+//
+//where Language='MALAYALAM'
+//
+//Group By transaction_membershipid;
+//
+//left join(l_log3)
+//
+//Marathi_watchers:
+//LOAD transaction_membershipid,
+// count(DISTINCT transactionItem_movieid) as Marathi_Movies_Watched
+//Resident
+//Temp
+//
+//where Language='MARATHI'
+//Group By transaction_membershipid;
+//
+//left join(l_log3)
+//
+//
+//Bengali_watchers:
+//LOAD transaction_membershipid,
+// count(DISTINCT transactionItem_movieid) as Bengali_Movies_Watched
+//Resident
+//Temp
+//
+//where Language='BENGALI'
+//
+//Group By transaction_membershipid;
+//
+//left join(l_log3)
+//
+//Punjabi_watchers:
+//LOAD transaction_membershipid,
+// count(DISTINCT transactionItem_movieid) as Punjabi_Movies_Watched
+//Resident
+//Temp
+//
+//where Language='PUNJABI'
+//
+//Group By transaction_membershipid;
+//
+//left join(l_log3)
+//
+//Other_Language_watchers:
+//LOAD transaction_membershipid,
+// count(DISTINCT transactionItem_movieid) as Other_Languages_Watched
+//Resident
+//Temp
+//
+//where Language<>'HINDI' and Language<>'ENGLISH' and Language<>'TAMIL' and Language<>'KANNADA' and Language<>'TELUGU' and Language<>'MALAYLAM' and Language<>'MARATHI' and Language<>'BENGALI' and Language<>'PUNJABI'
+//
+//Group By transaction_membershipid;
+//
+//left join(l_log3)
+//
+////Week part and Day part tags
+//
+//Time_of_day_tags:
+//LOAD transaction_membershipid, 
+// count(distinct if((Hour(transactionItem_sessionTime)>=6 and hour(transactionItem_sessionTime)<=11), transaction_id)) as Morning_shows_watched,
+// count(distinct if((Hour(transactionItem_sessionTime)>=12 and hour(transactionItem_sessionTime)<=15), transaction_id)) as Afternoon_shows_watched,
+// count(distinct if((Hour(transactionItem_sessionTime)>=16 and hour(transactionItem_sessionTime)<=19), transaction_id)) as Evening_shows_watched,
+// count(distinct if((Hour(transactionItem_sessionTime)>=20 and hour(transactionItem_sessionTime)<=23) or ((transactionItem_sessionTime)>=0 and hour(transactionItem_sessionTime)<=5), transaction_id)) as Night_shows_watched
+//FROM
+//[D:\XYZ February\SKU_full_updated_till_25_Feb_with_visit_rank.qvd]
+//(qvd)
+//
+//WHERE transactionItem_movieid<>'\N' and transactionItem_movieid<>'NULL' and  transactionItem_movieid<>''
+//and (transactionItem_itemid<>'100868' and transactionItem_itemid<>'100869' and transactionItem_itemid<>'102115' and transactionItem_itemid<>'103102' and transactionItem_itemid<>'103103' and transactionItem_itemid<>'106086' and transactionItem_itemid<>'107553' and transactionItem_itemid<>'108857' and transactionItem_itemid<>'6887' and transactionItem_itemid<>'9255' and transactionItem_itemid<>'183525' and transactionItem_itemid<>'2855728')
+//
+//group by transaction_membershipid;
+//
+//left join(l_log3)
+//
+//Weekday_weekend_Tags:
+//LOAD transaction_membershipid, 
+//     count(DISTINCT if(WeekDay(transactionItem_sessionTime)='Mon' or WeekDay(transactionItem_sessionTime)='Tue' or WeekDay(transactionItem_sessionTime)='Wed' or WeekDay(transactionItem_sessionTime)='Thu', transaction_id)) as Weekday_shows_watched,
+//     count(DISTINCT if(WeekDay(transactionItem_sessionTime)='Fri' or WeekDay(transactionItem_sessionTime)='Sat' or WeekDay(transactionItem_sessionTime)='Sun', transaction_id)) as Weekend_shows_watched
+//FROM
+//[D:\XYZ February\SKU_full_updated_till_25_Feb_with_visit_rank.qvd]
+//(qvd)
+//
+//WHERE transactionItem_movieid<>'\N' and transactionItem_movieid<>'NULL' and transactionItem_movieid<>''
+//and (transactionItem_itemid<>'100868' and transactionItem_itemid<>'100869' and transactionItem_itemid<>'102115' and transactionItem_itemid<>'103102' and transactionItem_itemid<>'103103' and transactionItem_itemid<>'106086' and transactionItem_itemid<>'107553' and transactionItem_itemid<>'108857' and transactionItem_itemid<>'6887' and transactionItem_itemid<>'9255' and transactionItem_itemid<>'183525' and transactionItem_itemid<>'2855728')
+//
+//group by transaction_membershipid;
+//
+//left join(l_log3)
+//
+//Daydreamers_tags:
+//LOAD transaction_membershipid, 
+// count(distinct if((Hour(transactionItem_sessionTime)>=6 and hour(transactionItem_sessionTime)<=17) and (WeekDay(transactionItem_sessionTime)='Mon' or WeekDay(transactionItem_sessionTime)='Tue' or WeekDay(transactionItem_sessionTime)='Wed' or WeekDay(transactionItem_sessionTime)='Thu'), transaction_id)) as Weekday_Morning_Evening_Ticket_transactions
+//FROM
+//[D:\XYZ February\SKU_full_updated_till_25_Feb_with_visit_rank.qvd]
+//(qvd)
+//
+//WHERE transactionItem_movieid<>'\N' and transactionItem_movieid<>'NULL' and transactionItem_movieid<>''
+//and (transactionItem_itemid<>'100868' and transactionItem_itemid<>'100869' and transactionItem_itemid<>'102115' and transactionItem_itemid<>'103102' and transactionItem_itemid<>'103103' and transactionItem_itemid<>'106086' and transactionItem_itemid<>'107553' and transactionItem_itemid<>'108857' and transactionItem_itemid<>'6887' and transactionItem_itemid<>'9255' and transactionItem_itemid<>'183525' and transactionItem_itemid<>'2855728')
+//
+//group by transaction_membershipid;
